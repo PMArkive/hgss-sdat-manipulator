@@ -72,7 +72,7 @@ class InfoBlock:
                     self.unkB = [None] * 2
                     for i in range(2):
                         self.unkB[i] = read_byte(None)
-                    print(self.name + " uses " + self.bnk)
+                    print(self.name + " uses " + self.fileName.strip(".sseq") + " uses " + self.bnk)
         def write(self):
             if self.name != "":
                 append_short(names[FILE].index(self.fileName))

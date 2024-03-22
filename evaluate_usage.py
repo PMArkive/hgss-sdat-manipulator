@@ -11,6 +11,7 @@ import os
 UsageFile = open("usage.txt")
 
 UsageDict = {}
+SEQToSSEQDict = {}
 SEQDict = {}
 BankDict = {}
 
@@ -19,11 +20,12 @@ bankCount = 1
 
 for line in UsageFile:
     if line.startswith("SEQ_"):
-        UsageDict[line.split(" uses ")[0].strip()] = line.split(" uses ")[1].strip()
-        SEQDict[seqCount] = line.split(" uses ")[0].strip()
+        UsageDict[line.split(" uses ")[0].strip()] = line.split(" uses ")[2].strip()
+        SEQToSSEQDict[line.split(" uses ")[0].strip()] = line.split(" uses ")[1].strip()
+        SEQDict[line.split(" uses ")[0].strip()] = seqCount
         seqCount += 1
     elif line.startswith("BANK_"):
-        UsageDict[line.split(" uses ")[0].strip()] = line.split(" uses ")[1].strip().strip("[").strip("]").split(",")
+        UsageDict[line.split(" uses ")[0].strip()] = line.split(" uses ")[1].strip().replace("[", "").replace(" ", "").replace("]", "").split(",")
         BankDict[line.split(" uses ")[0].strip()] = bankCount
         bankCount += 1
         if (bankCount == 495):
@@ -42,13 +44,13 @@ UsageFile.close()
 InstrFile = open("SMFT_Program_Uses.txt")
 
 currentFile = ""
-SEQToInstrDict = {}
+SSEQToInstrDict = {}
 
 for line in InstrFile:
     if line.startswith("File:"):
         currentFile = line.strip().strip("File: ").strip(".smft")
     elif line.startswith("Program"):
-        SEQToInstrDict[currentFile] = line.strip().strip("Program Numbers:[").strip("]").split(",")
+        SSEQToInstrDict[currentFile] = line.strip().strip("Program Numbers:[").strip("]").split(",")
 
 InstrFile.close()
 
@@ -82,3 +84,11 @@ for fileName in BankDict:#["BANK_BGM_FIELD6"]:
 
 
 ############ START LOGGING WHICH SEQ'S USE WHICH INSTRUMENTS ############
+
+
+
+for seq in SEQDict:
+    try:
+        print(seq, UsageDict[seq], UsageDict[UsageDict[seq]], SSEQToInstrDict[SEQToSSEQDict[seq]])
+    except KeyError:
+        print(seq + " (File " + SEQToSSEQDict[seq] + ") does not exist!")
