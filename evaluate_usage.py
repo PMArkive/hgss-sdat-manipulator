@@ -191,6 +191,15 @@ fileBlockJsonFile = open("gs_sound_data/FileBlock.json")
 infoBlockJson = json.load(infoBlockJsonFile)
 fileBlockJson = json.load(fileBlockJsonFile)
 
+# first, InfoBlock seqInfo
+for n in range(0, len(infoBlockJson["seqInfo"])):
+    if "SEQ_" in infoBlockJson["seqInfo"][n]["name"]:
+        infoBlockJson["seqInfo"][n]["bnk"] = "BANK_" + infoBlockJson["seqInfo"][n]["name"][len("SEQ_"):]
+
+# need to actually DELETE bank stuff i guess
+#for n in range(0, len(infoBlockJson["bankInfo"])):
+#    if "BANK_" in infoBlockJson["bankInfo"][n]["name"]:
+#        infoBlockJson["bankInfo"][n]["fileName"] = infoBlockJson["bankInfo"][n]["name"] + ".sbnk"
+#        infoBlockJson["bankInfo"][n]["wa"] = ["WAVE_ARC_" + infoBlockJson["bankInfo"][n]["name"][len("BANK_"):], "", "", ""]
+
 pprint.pprint(infoBlockJson)
-
-
