@@ -196,10 +196,14 @@ for n in range(0, len(infoBlockJson["seqInfo"])):
     if "SEQ_" in infoBlockJson["seqInfo"][n]["name"]:
         infoBlockJson["seqInfo"][n]["bnk"] = "BANK_" + infoBlockJson["seqInfo"][n]["name"][len("SEQ_"):]
 
-# need to actually DELETE bank stuff i guess
-#for n in range(0, len(infoBlockJson["bankInfo"])):
-#    if "BANK_" in infoBlockJson["bankInfo"][n]["name"]:
-#        infoBlockJson["bankInfo"][n]["fileName"] = infoBlockJson["bankInfo"][n]["name"] + ".sbnk"
-#        infoBlockJson["bankInfo"][n]["wa"] = ["WAVE_ARC_" + infoBlockJson["bankInfo"][n]["name"][len("BANK_"):], "", "", ""]
+# instead of deleting bank stuff, just add the new ones.  can come back through and actually delete things later
+newBanks = sorted(os.listdir("NEW_FILES/NEW_BANK"))
+for n in range(0, len(infoBlockJson["bankInfo"])):
+    if infoBlockJson["bankInfo"][n]["name"] in newBanks:
+        del(infoBlockJson["bankInfo"][n])
+for n in range(0, len(newBanks)):
+    baseName = newBanks[n][0:len(newBanks[n]) - len(".txt")]
+    newBankEntry = {"name": baseName, "fileName": baseName + ".sbnk", "unkA": 0, "wa": ["WAVE_ARC_" + baseName[len("BANK_"):], "", "", ""]}
+    infoBlockJson["bankInfo"].append(newBankEntry)
 
 pprint.pprint(infoBlockJson)
