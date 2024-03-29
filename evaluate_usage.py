@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 
+import hashlib
 import json
+import pprint
 import os
 import shutil
-import pprint
 
 
 
@@ -191,6 +192,9 @@ fileBlockJsonFile = open("gs_sound_data/FileBlock.json")
 infoBlockJson = json.load(infoBlockJsonFile)
 fileBlockJson = json.load(fileBlockJsonFile)
 
+infoBlockJsonFile.close()
+fileBlockJsonFile.close()
+
 # first, InfoBlock seqInfo
 for n in range(0, len(infoBlockJson["seqInfo"])):
     if "SEQ_" in infoBlockJson["seqInfo"][n]["name"]:
@@ -198,12 +202,66 @@ for n in range(0, len(infoBlockJson["seqInfo"])):
 
 # instead of deleting bank stuff, just add the new ones.  can come back through and actually delete things later
 newBanks = sorted(os.listdir("NEW_FILES/NEW_BANK"))
-for n in range(0, len(infoBlockJson["bankInfo"])):
+n = 0
+finalElement = len(infoBlockJson["bankInfo"])
+while n < finalElement:
     if infoBlockJson["bankInfo"][n]["name"] in newBanks:
         del(infoBlockJson["bankInfo"][n])
+        finalElement = finalElement - 1
+    n = n + 1
 for n in range(0, len(newBanks)):
     baseName = newBanks[n][0:len(newBanks[n]) - len(".txt")]
     newBankEntry = {"name": baseName, "fileName": baseName + ".sbnk", "unkA": 0, "wa": ["WAVE_ARC_" + baseName[len("BANK_"):], "", "", ""]}
     infoBlockJson["bankInfo"].append(newBankEntry)
 
-pprint.pprint(infoBlockJson)
+# now the wavarcInfo--add new entries here as well
+newWavarcs = sorted(os.listdir("NEW_FILES/NEW_WAVARC"))
+n = 0
+finalElement = len(infoBlockJson["wavarcInfo"])
+while n < finalElement:
+    if infoBlockJson["wavarcInfo"][n]["name"] in newWavarcs:
+        del(infoBlockJson["wavarcInfo"][n])
+        finalElement = finalElement - 1
+    n = n + 1
+for n in range(0, len(newWavarcs)):
+    baseName = newWavarcs[n] # folder name need not be messed with
+    newWavarcEntry = {"name": baseName, "fileName": baseName + ".swar", "unkA": 0}
+    infoBlockJson["wavarcInfo"].append(newWavarcEntry)
+
+infoBlockJsonFile = open("gs_sound_data/InfoBlock.json", "w", encoding="utf-8")
+json.dump(infoBlockJson, infoBlockJsonFile, ensure_ascii=False, indent=4)
+
+
+
+############ NOW UPDATE FILEBLOCK SUCH THAT EVERYTHING IS MAPPED PROPER ############
+
+
+
+# order is by type:  SEQ, BANK, WAVARC (with subfile)
+# just need to go through and append all of the new BANK and WAVARC files where they are expected!
+# then sdattool will take over and be perfect and life will flow like river
+
+seqIndex = 0
+bankIndex = 0
+wavarcIndex = 0
+for n in range(0, len(fileBlockJson["file"])):
+    if fileBlockJson["file"][n]["type"] == "BANK" and bankIndex == 0:
+        bankIndex = n
+    elif fileBlockJson["file"][n]["type"] == "WAVARC" and wavarcIndex == 0:
+        wavarcIndex = n
+for n in range(0, len(newBanks)):
+    newEntry = {}
+    newEntry["name"] = newBanks[n][:-1 * len(".txt")] + ".sbnk"
+    newEntry["type"] = "BANK"
+    newEntry["MD5"] = "" # fuck the md5 hash
+    fileBlockJson["file"].insert(wavarcIndex, newEntry)
+for n in range(0, len(newWavarcs)):
+    newEntry = {}
+    newEntry["name"] = newWavarcs[n] + ".swar"
+    newEntry["type"] = "WAVARC"
+    newEntry["MD5"] = "" # fuck the md5 hash
+    newEntry["subfile"] = sorted(os.listdir("NEW_FILES/NEW_WAVARC/" + newWavarcs[n]))
+    fileBlockJson["file"].append(newEntry)
+
+fileBlockJsonFile = open("gs_sound_data/FileBlock.json", "w", encoding="utf-8")
+json.dump(fileBlockJson, fileBlockJsonFile, ensure_ascii=False, indent=4)
