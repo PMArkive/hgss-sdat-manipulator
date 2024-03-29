@@ -197,6 +197,8 @@ fileBlockJsonFile.close()
 
 # first, InfoBlock seqInfo
 for n in range(0, len(infoBlockJson["seqInfo"])):
+    if 'AIF' in infoBlockJson["seqInfo"][n]["name"] or "UMIBE" in infoBlockJson["seqInfo"][n]["name"]:
+        continue
     if "SEQ_" in infoBlockJson["seqInfo"][n]["name"]:
         infoBlockJson["seqInfo"][n]["bnk"] = "BANK_" + infoBlockJson["seqInfo"][n]["name"][len("SEQ_"):]
 
@@ -260,7 +262,7 @@ for n in range(0, len(newWavarcs)):
     newEntry["name"] = newWavarcs[n] + ".swar"
     newEntry["type"] = "WAVARC"
     newEntry["MD5"] = "" # fuck the md5 hash
-    newEntry["subfile"] = sorted(os.listdir("NEW_FILES/NEW_WAVARC/" + newWavarcs[n]))
+    newEntry["subFile"] = sorted(os.listdir("NEW_FILES/NEW_WAVARC/" + newWavarcs[n]))
     fileBlockJson["file"].append(newEntry)
 
 fileBlockJsonFile = open("gs_sound_data/FileBlock.json", "w", encoding="utf-8")

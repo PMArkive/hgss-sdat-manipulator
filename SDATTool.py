@@ -1349,7 +1349,7 @@ if mode:  # Build
                         if thisLine != "":
                             sbnkLines.append(thisLine)
                             if thisLine.find("\t") == -1 and thisLine.find("Unused") == -1:  # Don't count unused or sub definitions
-                                numInst += 1
+                                numInst = int(thisLine.split(", ")[0])+1 if (int(thisLine.split(", ")[0])+1 > numInst) else numInst
                 sbnkHeader = []
                 sbnkHeaderSize = 0x3C
                 sbnkData = []
@@ -1442,6 +1442,7 @@ if mode:  # Build
         testPath = f"{outfileArg}/Files/{itemString[itemExt.index(fName[-5:])]}/{fName}"
         if not os.path.exists(testPath):
             if fName[-5:] == ".swar":  # can the swar be built?
+                print(testPath)
                 swavName = fileBlock.file[i].subFile
                 swarTemp = []
                 for ii, sName in enumerate(swavName):
