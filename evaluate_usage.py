@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 
-import hashlib
+#import hashlib
 import json
 import pprint
 import os
 import shutil
+from subprocess import run
 
 
 
@@ -210,7 +211,8 @@ while n < finalElement:
     if infoBlockJson["bankInfo"][n]["name"] in newBanks:
         del(infoBlockJson["bankInfo"][n])
         finalElement = finalElement - 1
-    n = n + 1
+    else:
+        n = n + 1
 for n in range(0, len(newBanks)):
     baseName = newBanks[n][0:len(newBanks[n]) - len(".txt")]
     newBankEntry = {"name": baseName, "fileName": baseName + ".sbnk", "unkA": 0, "wa": ["WAVE_ARC_" + baseName[len("BANK_"):], "", "", ""]}
@@ -224,14 +226,12 @@ while n < finalElement:
     if infoBlockJson["wavarcInfo"][n]["name"] in newWavarcs:
         del(infoBlockJson["wavarcInfo"][n])
         finalElement = finalElement - 1
-    n = n + 1
+    else:
+        n = n + 1
 for n in range(0, len(newWavarcs)):
     baseName = newWavarcs[n] # folder name need not be messed with
     newWavarcEntry = {"name": baseName, "fileName": baseName + ".swar", "unkA": 0}
     infoBlockJson["wavarcInfo"].append(newWavarcEntry)
-
-infoBlockJsonFile = open("gs_sound_data/InfoBlock.json", "w", encoding="utf-8")
-json.dump(infoBlockJson, infoBlockJsonFile, ensure_ascii=False, indent=4)
 
 
 
@@ -265,5 +265,82 @@ for n in range(0, len(newWavarcs)):
     newEntry["subFile"] = sorted(os.listdir("NEW_FILES/NEW_WAVARC/" + newWavarcs[n]))
     fileBlockJson["file"].append(newEntry)
 
+
+
+############ COPY ALL OF THE FILES OVER ############
+
+
+
+print("Copying files over...")
+for n in range(0, len(newWavarcs)):
+    run(["cp", "-r", "NEW_FILES/NEW_WAVARC/" + newWavarcs[n], "gs_sound_data/Files/WAVARC/" + newWavarcs[n]])
+for n in range(0, len(newBanks)):
+    run(["cp", "-r", "NEW_FILES/NEW_BANK/" + newBanks[n], "gs_sound_data/Files/BANK/"])
+
+
+
+############ DELETE ALL UNUSED FILES' METADATA ############
+
+
+
+usedFiles = []
+unusedFiles = []
+for n in range(0, len(infoBlockJson["seqInfo"])):
+    if infoBlockJson["seqInfo"][n]["name"] != "":
+        usedFiles.append(infoBlockJson["seqInfo"][n]["bnk"])
+for n in range(0, len(infoBlockJson["bankInfo"])):
+    if infoBlockJson["bankInfo"][n]["name"] != "" and infoBlockJson["bankInfo"][n]["name"] in usedFiles:
+        for i in range(0, 4):
+            if infoBlockJson["bankInfo"][n]["wa"][i] != "":
+                usedFiles.append(infoBlockJson["bankInfo"][n]["wa"][i])
+# now go through and delete the entries
+n = 0
+finalElement = len(infoBlockJson["bankInfo"])
+while n < finalElement:
+    if infoBlockJson["bankInfo"][n]["name"] != "" and infoBlockJson["bankInfo"][n]["name"] not in usedFiles:
+        finalElement = finalElement - 1
+        unusedFiles.append(infoBlockJson["bankInfo"][n]["name"])
+        del(infoBlockJson["bankInfo"][n])
+    else:
+        n = n + 1
+# delete wavarc entries
+n = 0
+finalElement = len(infoBlockJson["wavarcInfo"])
+while n < finalElement:
+    if infoBlockJson["wavarcInfo"][n]["name"] != "" and infoBlockJson["wavarcInfo"][n]["name"] not in usedFiles:
+        finalElement = finalElement - 1
+        unusedFiles.append(infoBlockJson["wavarcInfo"][n]["name"])
+        del(infoBlockJson["wavarcInfo"][n])
+    else:
+        n = n + 1
+# and finally the fileblock
+n = 0
+finalElement = len(fileBlockJson["file"])
+while n < finalElement:
+    if fileBlockJson["file"][n]["name"].split(".")[0] in unusedFiles:
+        finalElement = finalElement - 1
+        del(fileBlockJson["file"][n])
+    else:
+        n = n + 1
+
+
+
+############ SAVE MODIFIED JSON FILES ############
+
+
+
+infoBlockJsonFile = open("gs_sound_data/InfoBlock.json", "w", encoding="utf-8")
+json.dump(infoBlockJson, infoBlockJsonFile, ensure_ascii=False, indent=4)
+infoBlockJsonFile.close()
+
 fileBlockJsonFile = open("gs_sound_data/FileBlock.json", "w", encoding="utf-8")
 json.dump(fileBlockJson, fileBlockJsonFile, ensure_ascii=False, indent=4)
+fileBlockJsonFile.close()
+
+
+
+############ DONE ############
+
+
+
+print("Done!")

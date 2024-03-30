@@ -1442,7 +1442,6 @@ if mode:  # Build
         testPath = f"{outfileArg}/Files/{itemString[itemExt.index(fName[-5:])]}/{fName}"
         if not os.path.exists(testPath):
             if fName[-5:] == ".swar":  # can the swar be built?
-                print(testPath)
                 swavName = fileBlock.file[i].subFile
                 swarTemp = []
                 for ii, sName in enumerate(swavName):
