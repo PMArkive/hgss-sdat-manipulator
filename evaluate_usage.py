@@ -215,7 +215,10 @@ while n < finalElement:
         n = n + 1
 for n in range(0, len(newBanks)):
     baseName = newBanks[n][0:len(newBanks[n]) - len(".txt")]
-    newBankEntry = {"name": baseName, "fileName": baseName + ".sbnk", "unkA": 0, "wa": ["WAVE_ARC_" + baseName[len("BANK_"):], "", "", ""]}
+    if "SE_GS_N_SESERAGI" in baseName:
+        newBankEntry = {"name": baseName, "fileName": baseName + ".sbnk", "unkA": 0, "wa": ["WAVE_ARC_DUMMY", "", "", ""]}
+    else:
+        newBankEntry = {"name": baseName, "fileName": baseName + ".sbnk", "unkA": 0, "wa": ["WAVE_ARC_" + baseName[len("BANK_"):], "", "", ""]}
     infoBlockJson["bankInfo"].append(newBankEntry)
 
 # now the wavarcInfo--add new entries here as well
@@ -223,15 +226,16 @@ newWavarcs = sorted(os.listdir("NEW_FILES/NEW_WAVARC"))
 n = 0
 finalElement = len(infoBlockJson["wavarcInfo"])
 while n < finalElement:
-    if infoBlockJson["wavarcInfo"][n]["name"] in newWavarcs:
+    if infoBlockJson["wavarcInfo"][n]["name"] in newWavarcs and "_PV001" not in infoBlockJson["wavarcInfo"][n]["name"]:
         del(infoBlockJson["wavarcInfo"][n])
         finalElement = finalElement - 1
     else:
         n = n + 1
 for n in range(0, len(newWavarcs)):
     baseName = newWavarcs[n] # folder name need not be messed with
-    newWavarcEntry = {"name": baseName, "fileName": baseName + ".swar", "unkA": 0}
-    infoBlockJson["wavarcInfo"].append(newWavarcEntry)
+    if "_PV001" not in baseName:
+        newWavarcEntry = {"name": baseName, "fileName": baseName + ".swar", "unkA": 0}
+        infoBlockJson["wavarcInfo"].append(newWavarcEntry)
 
 
 
@@ -297,7 +301,7 @@ for n in range(0, len(infoBlockJson["bankInfo"])):
 n = 0
 finalElement = len(infoBlockJson["bankInfo"])
 while n < finalElement:
-    if infoBlockJson["bankInfo"][n]["name"] != "" and infoBlockJson["bankInfo"][n]["name"] not in usedFiles:
+    if infoBlockJson["bankInfo"][n]["name"] != "" and infoBlockJson["bankInfo"][n]["name"] not in usedFiles and "_PV" not in infoBlockJson["bankInfo"][n]["name"]:
         finalElement = finalElement - 1
         unusedFiles.append(infoBlockJson["bankInfo"][n]["name"])
         del(infoBlockJson["bankInfo"][n])
@@ -307,7 +311,7 @@ while n < finalElement:
 n = 0
 finalElement = len(infoBlockJson["wavarcInfo"])
 while n < finalElement:
-    if infoBlockJson["wavarcInfo"][n]["name"] != "" and infoBlockJson["wavarcInfo"][n]["name"] not in usedFiles:
+    if infoBlockJson["wavarcInfo"][n]["name"] != "" and infoBlockJson["wavarcInfo"][n]["name"] not in usedFiles and "_PV" not in infoBlockJson["wavarcInfo"][n]["name"]:
         finalElement = finalElement - 1
         unusedFiles.append(infoBlockJson["wavarcInfo"][n]["name"])
         del(infoBlockJson["wavarcInfo"][n])
